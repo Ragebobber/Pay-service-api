@@ -1,0 +1,56 @@
+version: '3.8'
+
+services:
+  service-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+        - "8181:8181"
+    depends_on:
+        service-db:
+          condition: service_healthy
+    environment:
+      - SERVER_PORT=8181
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/pay-service
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=postgres
+      - SPRING_DATASOURCE_DRIVER_CLASS_NAME=org.postgresql.Driver
+    restart: unless-stopped
+
+  rabbitmq:
+    image: rabbitmq:management-alpine
+    container_name: rabbitmq
+    #hostname: rabbitmq
+    restart: unless-stopped
+    environment:
+      - RABBITMQ_DEFAULT_USER=root
+      - RABBITMQ_DEFAULT_PASS=root
+      - RABBITMQ_SERVER_ADDITIONAL_ERL_ARGS=-rabbit log [{console,[{level,debug}]}]
+    volumes:
+      - ./volumes/rabbitmq/data/:/var/lib/rabbitmq/
+      - ./volumes/rabbitmq/etc/rabbitmq/:/etc/rabbitmq/
+      - ./logs/rabbitmq/:/var/log/rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+
+  service-db:
+    image: postgres:14.7-alpine
+    container_name: postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "15432:5432"
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres", "--quiet"]
+      interval: 1s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  db-data:
