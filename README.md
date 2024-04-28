@@ -47,7 +47,8 @@ Service for accepting payments through Yookassa
 ### Yookassa connection
 1) Register
 2) Get shopId and token from settings
-3) Paste to properties or in docker-compose.yml 
+3) Set Yookassa notification to /acquiring/callback/v1/yookassa/notification
+4) Paste to properties or in docker-compose.yml 
  ```
 acquiring.yookassa.restClient.url=https://api.yookassa.ru/v3
 acquiring.yookassa.shopId=urShopId
@@ -61,6 +62,7 @@ spring.rabbitmq.host=localhost
 spring.rabbitmq.port=5672
 spring.rabbitmq.username=root
 spring.rabbitmq.password=root
+spring.rabbitmq.listener.simple.auto-startup=true
 ```
 
 ### PostgreSQL
